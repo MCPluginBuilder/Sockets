@@ -15,6 +15,7 @@ import de.ancash.sockets.async.server.AbstractAsyncServer;
 import de.ancash.sockets.async.server.DefaultAsyncAcceptHandler;
 import de.ancash.sockets.events.ClientConnectEvent;
 import de.ancash.sockets.events.ClientDisconnectEvent;
+import de.ancash.sockets.io.ITCPClient;
 import de.ancash.sockets.packet.Packet;
 import de.ancash.sockets.packet.UnfinishedPacket;
 
@@ -64,7 +65,7 @@ public class AsyncPacketServer extends AbstractAsyncServer {
 		EventManager.callEvent(new ClientConnectEvent(cl));
 	}
 
-	public void onDisconnect(AsyncPacketServerClient cl, Throwable th) {
+	public void disconnect(ITCPClient cl, Throwable th) {
 
 		synchronized (clients) {
 			clients.remove(cl);

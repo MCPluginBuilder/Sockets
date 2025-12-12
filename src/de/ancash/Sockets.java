@@ -29,6 +29,7 @@ import de.ancash.misc.io.SerializationUtils;
 import de.ancash.sockets.async.impl.packet.client.AsyncPacketClient;
 import de.ancash.sockets.async.impl.packet.client.AsyncPacketClientFactory;
 import de.ancash.sockets.async.impl.packet.server.AsyncPacketServer;
+import de.ancash.sockets.async.impl.packet.server.netty.NettyPacketServer;
 import de.ancash.sockets.packet.Packet;
 import de.ancash.sockets.packet.PacketCallback;
 
@@ -199,15 +200,15 @@ public class Sockets {
 			return;
 		}
 	}
-
-	@SuppressWarnings("nls")
-	public static void main(String... args) throws InterruptedException, NumberFormatException, UnknownHostException, IOException {
-		System.out.println("Starting Sockets...");
-		SerializationUtils.addClazzLoader(Sockets.class.getClassLoader());
-//		testThroughput();
-//		testLatency();
-//		if (true)
-//			return;
+	
+	private static void loadPlugins() {
+		new File("plugins").mkdirs();
+		pluginManager.loadJars();
+		pluginManager.getPluginLoader().stream().map(LokiPluginLoader::getClassLoader).forEach(SerializationUtils::addClazzLoader);
+		System.out.println("Loaded Plugins!");
+	}
+	
+	private static void setupLog() throws IOException {
 		PluginOutputFormatter pof = new PluginOutputFormatter(
 				"[" + IFormatter.PART_DATE_TIME + "] " + "[" + IFormatter.THREAD_NAME + "/" + IFormatter.COLOR + IFormatter.LEVEL + IFormatter.RESET
 						+ "] [" + PluginOutputFormatter.PLUGIN_NAME + "] " + IFormatter.COLOR + IFormatter.MESSAGE + IFormatter.RESET,
@@ -232,6 +233,18 @@ public class Sockets {
 				}
 			}
 		});
+	}
+	
+	@SuppressWarnings("nls")
+	public static void main(String... args) throws InterruptedException, NumberFormatException, UnknownHostException, IOException {
+		System.out.println("Starting Sockets...");
+		SerializationUtils.addClazzLoader(Sockets.class.getClassLoader());
+//		testThroughput();
+//		testLatency();
+//		if (true)
+//			return;
+		
+		setupLog();
 
 		System.out.println("Using " + Runtime.getRuntime().availableProcessors() + " cores");
 		Map<String, String> arguments = new HashMap<>();
@@ -249,20 +262,21 @@ public class Sockets {
 		System.out.println("Port: " + arguments.get("p"));
 		System.out.println("Packet Worker: " + arguments.get("w"));
 		System.out.println("Loading plugins...");
-		pluginManager.loadJars();
-		pluginManager.getPluginLoader().stream().map(LokiPluginLoader::getClassLoader).forEach(SerializationUtils::addClazzLoader);
-		System.out.println("Loaded Plugins!");
-		serverSocket = new AsyncPacketServer(arguments.get("h"), Integer.valueOf(arguments.get("p")), Integer.valueOf(arguments.get("w")));
-		try {
-			serverSocket.start();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
-		}
+		loadPlugins();
+//		serverSocket = new AsyncPacketServer(arguments.get("h"), Integer.valueOf(arguments.get("p")), Integer.valueOf(arguments.get("w")));
+//		try {
+//			serverSocket.start();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			return;
+//		}
 		System.out.println("Enabling plugins...");
 		pluginManager.loadPlugins();
 		System.out.println("Enabled plugins!");
-
+		
+		System.out.println("starting server");
+		NettyPacketServer server = new NettyPacketServer(arguments.get("h"), Integer.valueOf(arguments.get("p")));
+		
 		CLI cli = new CLI();
 		cli.onInput(Sockets::onInput);
 		cli.run();

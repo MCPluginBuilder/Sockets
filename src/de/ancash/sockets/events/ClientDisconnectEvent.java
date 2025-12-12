@@ -2,7 +2,7 @@ package de.ancash.sockets.events;
 
 import de.ancash.libs.org.bukkit.event.Event;
 import de.ancash.libs.org.bukkit.event.HandlerList;
-import de.ancash.sockets.async.client.AbstractAsyncClient;
+import de.ancash.sockets.io.ITCPClient;
 
 public class ClientDisconnectEvent extends Event {
 
@@ -12,20 +12,20 @@ public class ClientDisconnectEvent extends Event {
 		return handlers;
 	}
 
-	private final AbstractAsyncClient client;
+	private final ITCPClient client;
 	private final Throwable th;
 
-	public ClientDisconnectEvent(AbstractAsyncClient client, Throwable th) {
+	public ClientDisconnectEvent(ITCPClient client, Throwable th) {
 		this.client = client;
 		this.th = th;
 	}
 
-	public AbstractAsyncClient getClient() {
-		return client;
-	}
-
 	public Throwable getThrowable() {
 		return th;
+	}
+	
+	public ITCPClient getClient() {
+		return client;
 	}
 
 	@Override

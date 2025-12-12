@@ -32,7 +32,7 @@ import de.ancash.sockets.packet.PacketCallback;
 import de.ancash.sockets.packet.PacketCombiner;
 import de.ancash.sockets.packet.UnfinishedPacket;
 
-public class AsyncPacketClient extends AbstractAsyncClient implements Listener {
+public class AsyncPacketClient extends AbstractAsyncClient {
 
 	private static final Set<Long> workers = new HashSet<Long>();
 	private static final ExecutorService workerPool = Executors.newFixedThreadPool(Math.max(Runtime.getRuntime().availableProcessors() / 8, 1),
@@ -77,15 +77,12 @@ public class AsyncPacketClient extends AbstractAsyncClient implements Listener {
 		packetCombiner = new PacketCombiner(1024 * 1024, 16);
 		setAsyncClientFactory(new AsyncPacketClientFactory());
 		setAsyncConnectHandlerFactory(s -> new DefaultAsyncConnectHandler(s));
-
-		EventManager.registerEvents(this, this);
 	}
 
 	public void freeReadBuffer(DistributedByteBuffer dbb) {
 		packetCombiner.freeBuffer(dbb);
 	}
 
-	@EventHandler
 	public void onPacket(ClientPacketReceiveEvent event) {
 		Packet packet = event.getPacket();
 		PacketCallback pc = null;
@@ -133,17 +130,17 @@ public class AsyncPacketClient extends AbstractAsyncClient implements Listener {
 	}
 
 	@Override
-	public synchronized void onDisconnect(Throwable th) {
+	public synchronized void disconnect(Throwable th) {
 		try {
 			getAsyncSocketChannel().close();
 		} catch (IOException e) {
 
 		}
-		EventManager.callEvent(new ClientDisconnectEvent(this, th));
 		try {
 			while (!lock.compareAndSet(null, Thread.currentThread().getId())
 					&& !lock.compareAndSet(Thread.currentThread().getId(), Thread.currentThread().getId()))
 				Sockets.sleepMillis(1);
+			EventManager.callEvent(new ClientDisconnectEvent(this, th));
 			packetCallbacks.clear();
 			awaitResponses.clear();
 		} finally {

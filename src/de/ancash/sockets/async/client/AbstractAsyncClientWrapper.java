@@ -9,7 +9,7 @@ import de.ancash.libs.org.bukkit.event.Listener;
 import de.ancash.sockets.events.ClientConnectEvent;
 import de.ancash.sockets.events.ClientDisconnectEvent;
 
-public abstract class AbstractAsyncClientWrapper<S extends AbstractAsyncClient, T extends AbstractAsyncClientFactory<S>> implements Listener {
+public abstract class AbstractAsyncClientWrapper<S extends AbstractAsyncClient, T extends AbstractAsyncClientFactory<S>> {
 
 	protected S chatClient;
 	protected final T factory;
@@ -18,7 +18,6 @@ public abstract class AbstractAsyncClientWrapper<S extends AbstractAsyncClient, 
 
 	@SuppressWarnings("deprecation")
 	public AbstractAsyncClientWrapper(Class<T> clazz) {
-		EventManager.registerEvents(this, this);
 		try {
 			this.factory = clazz.newInstance();
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
@@ -30,7 +29,7 @@ public abstract class AbstractAsyncClientWrapper<S extends AbstractAsyncClient, 
 	public synchronized boolean connect(String address, int port) {
 		if (chatClient != null) {
 			try {
-				chatClient.onDisconnect(new IllegalStateException("Only one client"));
+				chatClient.disconnect(new IllegalStateException("client already exists"));
 			} catch (Exception ex) {
 			}
 			chatClient = null;
@@ -61,18 +60,6 @@ public abstract class AbstractAsyncClientWrapper<S extends AbstractAsyncClient, 
 
 	public S getClient() {
 		return chatClient;
-	}
-
-	@EventHandler
-	public void onClientDisconnect(ClientDisconnectEvent event) {
-		if (event.getClient().equals(chatClient))
-			this.onClientDisconnect(event.getClient());
-	}
-
-	@EventHandler
-	public void onClientConnect(ClientConnectEvent event) {
-		if (event.getClient().equals(chatClient))
-			this.onClientConnect(event.getClient());
 	}
 
 	public abstract void onClientDisconnect(AbstractAsyncClient client);

@@ -101,7 +101,7 @@ public class DefaultAsyncReadHandler implements CompletionHandler<Integer, Distr
 	@Override
 	public void failed(Throwable arg0, DistributedByteBuffer arg1) {
 		client.setConnected(false);
-		client.onDisconnect(arg0);
+		client.disconnect(arg0);
 	}
 
 	public void onDisconnect() {

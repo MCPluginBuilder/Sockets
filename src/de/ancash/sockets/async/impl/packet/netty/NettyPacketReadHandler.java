@@ -1,4 +1,4 @@
-package de.ancash.sockets.netty;
+package de.ancash.sockets.async.impl.packet.netty;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,7 +13,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class ReadHandler extends ChannelInboundHandlerAdapter {
+public class NettyPacketReadHandler extends ChannelInboundHandlerAdapter {
 	
 	private static final ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	
@@ -22,7 +22,7 @@ public class ReadHandler extends ChannelInboundHandlerAdapter {
 	private final Consumer<Packet> packetHandler;
 	private final Runnable onDisconnect;
 	
-	public ReadHandler(Consumer<Packet> packetHandler, Runnable onDisconnect) {
+	public NettyPacketReadHandler(Consumer<Packet> packetHandler, Runnable onDisconnect) {
 		this.packetHandler = packetHandler;
 		this.onDisconnect = onDisconnect;
 	}

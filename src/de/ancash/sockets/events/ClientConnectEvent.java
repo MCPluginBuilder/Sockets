@@ -2,7 +2,7 @@ package de.ancash.sockets.events;
 
 import de.ancash.libs.org.bukkit.event.Event;
 import de.ancash.libs.org.bukkit.event.HandlerList;
-import de.ancash.sockets.async.client.AbstractAsyncClient;
+import de.ancash.sockets.io.ITCPClient;
 
 public class ClientConnectEvent extends Event {
 
@@ -12,13 +12,13 @@ public class ClientConnectEvent extends Event {
 		return handlers;
 	}
 
-	private final AbstractAsyncClient cl;
+	private final ITCPClient cl;
 
-	public ClientConnectEvent(AbstractAsyncClient cl) {
+	public ClientConnectEvent(ITCPClient cl) {
 		this.cl = cl;
 	}
 
-	public AbstractAsyncClient getClient() {
+	public ITCPClient getClient() {
 		return cl;
 	}
 

@@ -12,8 +12,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.ancash.sockets.async.FactoryHandler;
+import de.ancash.sockets.io.ITCPClient;
 
-public abstract class AbstractAsyncClient extends FactoryHandler {
+public abstract class AbstractAsyncClient extends FactoryHandler implements ITCPClient{
 
 	private static final AtomicInteger clid = new AtomicInteger();
 
@@ -77,14 +78,17 @@ public abstract class AbstractAsyncClient extends FactoryHandler {
 		readHandler.tryInitRead();
 	}
 
-	public void putWrite(byte[] b) throws InterruptedException {
+	@Override
+	public void putWrite(byte[] b) {
 		putWrite(ByteBuffer.wrap(b));
 	}
-
+	
+	@Override
 	public void putWrite(ByteBuffer bb) {
 		writeHandler.write(bb);
 	}
 
+	@Override
 	public boolean isConnected() {
 		return isConnected.get() && asyncSocket.isOpen();
 	}
@@ -92,6 +96,8 @@ public abstract class AbstractAsyncClient extends FactoryHandler {
 	public int getWriteBufSize() {
 		return writeBufSize;
 	}
+	
+	public abstract void onConnect();
 
 	public int getReadBufSize() {
 		return readBufSize;
@@ -134,8 +140,4 @@ public abstract class AbstractAsyncClient extends FactoryHandler {
 	public void onBytesReceive(ByteBuffer bytes) {
 
 	}
-
-	public abstract void onConnect();
-
-	public abstract void onDisconnect(Throwable th);
 }

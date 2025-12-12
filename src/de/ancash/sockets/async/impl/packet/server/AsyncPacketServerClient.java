@@ -64,7 +64,7 @@ public class AsyncPacketServerClient extends AbstractAsyncClient {
 	}
 
 	@Override
-	public void onDisconnect(Throwable th) {
-		server.onDisconnect(this, th);
+	public void disconnect(Throwable th) {
+		server.disconnect(this, th);
 	}
 }

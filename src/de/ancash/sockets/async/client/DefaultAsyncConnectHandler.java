@@ -19,6 +19,6 @@ public class DefaultAsyncConnectHandler implements CompletionHandler<Void, Abstr
 
 	@Override
 	public void failed(Throwable arg0, AbstractAsyncClient arg1) {
-		client.onDisconnect(arg0);
+		client.disconnect(arg0);
 	}
 }

@@ -3,6 +3,7 @@ package de.ancash.sockets.events;
 import de.ancash.libs.org.bukkit.event.Event;
 import de.ancash.libs.org.bukkit.event.HandlerList;
 import de.ancash.sockets.async.client.AbstractAsyncClient;
+import de.ancash.sockets.io.ITCPClient;
 import de.ancash.sockets.packet.Packet;
 
 public final class ClientPacketReceiveEvent extends Event {
@@ -19,14 +20,14 @@ public final class ClientPacketReceiveEvent extends Event {
 	}
 
 	private final Packet packet;
-	private final AbstractAsyncClient receiver;
+	private final ITCPClient receiver;
 
-	public ClientPacketReceiveEvent(AbstractAsyncClient receiver, Packet packet) {
+	public ClientPacketReceiveEvent(ITCPClient receiver, Packet packet) {
 		this.packet = packet;
 		this.receiver = receiver;
 	}
 
-	public AbstractAsyncClient getReceiver() {
+	public ITCPClient getReceiver() {
 		return receiver;
 	}
 

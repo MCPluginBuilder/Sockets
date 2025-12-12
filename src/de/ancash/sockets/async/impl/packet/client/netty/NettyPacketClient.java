@@ -1,6 +1,8 @@
-package de.ancash.sockets.async.impl.packet.netty;
+package de.ancash.sockets.async.impl.packet.client.netty;
 
 import java.io.IOException;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -8,11 +10,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import de.ancash.Sockets;
+import de.ancash.sockets.async.impl.packet.netty.NettyPacketReadHandler;
+import de.ancash.sockets.io.ITCPClient;
 import de.ancash.sockets.netty.NettyClient;
 import de.ancash.sockets.packet.Packet;
 import de.ancash.sockets.packet.PacketCallback;
 
-public class NettyPacketClient {
+public class NettyPacketClient implements ITCPClient{
 
 
 	private final Map<Long, PacketCallback> packetCallbacks = new ConcurrentHashMap<>();
@@ -28,18 +32,28 @@ public class NettyPacketClient {
 	}
 
 	public NettyPacketClient(String address, int port, Consumer<Packet> onPacket, Runnable onConnect, Runnable onDisconnect) {
-		this.nettyClient = new NettyClient(address, port, p -> onPacket(p));
+		this.nettyClient = new NettyClient(address, port);
 		this.onPacket = onPacket;
 		this.onDisconnect = onDisconnect;
 		nettyClient.setOnDisconnect(() -> onDisconnect());
 		nettyClient.setOnConnect(onConnect);
 	}
 	
-	public boolean connect() throws InterruptedException {
-		return nettyClient.connect();
+	public NettyPacketClient(NettyClient client, Consumer<Packet> onPacket, Runnable onDisconnect) {
+		this.nettyClient = client;
+		this.onDisconnect = onDisconnect;
+		nettyClient.setOnDisconnect(() -> onDisconnect());
 	}
 	
-	private void onPacket(Packet packet) {
+	public void setOnPacket(Consumer<Packet> onPacket) {
+		this.onPacket = onPacket;
+	}
+	
+	public boolean connect() throws InterruptedException {
+		return nettyClient.connect(new NettyPacketReadHandler(p -> onPacket(p), onDisconnect));
+	}
+	
+	public void onPacket(Packet packet) {
 		PacketCallback pc = null;
 		Packet awake;
 		pc = packetCallbacks.remove(packet.getTimeStamp());
@@ -50,7 +64,18 @@ public class NettyPacketClient {
 			awake.awake(packet);
 		onPacket.accept(packet);
 	}
+	
+	@Override
+	public void putWrite(byte[] b) {
+		nettyClient.putWrite(b);
+	}
+	
+	@Override
+	public void putWrite(ByteBuffer buffer) {
+		nettyClient.putWrite(buffer);
+	}
 
+	
 	public final void write(Packet packet) {
 		while (packetCallbacks.size() + awaitResponses.size() > 70 && (packet.hasPacketCallback() || packet.isAwaitingRespose())) {
 			Sockets.sleepMillis(1);
@@ -61,7 +86,7 @@ public class NettyPacketClient {
 		}
 		if (packet.isAwaitingRespose())
 			awaitResponses.put(packet.getTimeStamp(), packet);
-		nettyClient.write(packet);
+		nettyClient.putWrite(packet);
 	}
 
 	private synchronized void onDisconnect() {
@@ -74,11 +99,17 @@ public class NettyPacketClient {
 		} finally {
 			lock.set(null);
 		}
-		onDisconnect.run();
+		onDisconnect.run();;
 	}
 
-	public void disconnect() {
-		nettyClient.disconnect();
+	@Override
+	public SocketAddress getRemoteAddress() {
+		return nettyClient.getRemoteAddress();
+	}
+	
+	@Override
+	public void disconnect(Throwable th) {
+		nettyClient.disconnect(th);
 	}
 	
 	public boolean isConnected() {

@@ -98,7 +98,7 @@ public class AsyncClientPool<S extends AbstractAsyncClient, T extends AbstractAs
 			enabled = false;
 			clients.forEach(client -> {
 				client.setConnected(false);
-				client.onDisconnect(null);
+				client.disconnect(null);
 			});
 			clients.clear();
 		}

@@ -73,6 +73,8 @@
                         <excludes>
                             <exclude>META-INF/native/**</exclude>
                             <exclude>META-INF/native/*</exclude>
+							<exclude>META-INF/native-image/**</exclude>
+                            <exclude>META-INF/native-image/*</exclude>
                         </excludes>
                     </filter>
                     <filter>
@@ -108,9 +110,24 @@
 		</repository>
 	</repositories>
 	<dependencies>
-		<dependency>
+<dependency>
     <groupId>io.netty</groupId>
-    <artifactId>netty-all</artifactId>
+    <artifactId>netty-transport</artifactId>
+    <version>4.1.128.Final</version>
+</dependency>
+<dependency>
+    <groupId>io.netty</groupId>
+    <artifactId>netty-handler</artifactId>
+    <version>4.1.128.Final</version>
+</dependency>
+<dependency>
+    <groupId>io.netty</groupId>
+    <artifactId>netty-common</artifactId>
+    <version>4.1.128.Final</version>
+</dependency>
+<dependency>
+    <groupId>io.netty</groupId>
+    <artifactId>netty-buffer</artifactId>
     <version>4.1.128.Final</version>
 </dependency>
 		<dependency>

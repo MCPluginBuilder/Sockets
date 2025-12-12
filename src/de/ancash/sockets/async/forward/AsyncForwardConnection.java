@@ -78,7 +78,7 @@ public class AsyncForwardConnection extends AbstractAsyncClient {
 	}
 
 	@Override
-	public void onDisconnect(Throwable th) {
+	public void disconnect(Throwable th) {
 		synchronized (this) {
 			if (!connected)
 				return;
